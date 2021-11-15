@@ -24,15 +24,16 @@ sleep(1)
 
 
 # АВТОРИЗАЦИЯ
-driver.find_element(By.XPATH, '//button[text()="Войти"]').click()
-user_name = driver.find_element(By.XPATH, '//input[@name="email"]')
-user_name.send_keys("forever21yong@gmail.com")
-password = driver.find_element(By.XPATH, '//input[@name="password"]')
-password.send_keys("ForeverYoung23")
-actions = ActionChains(driver)
-actions.send_keys(Keys.ENTER)
-actions.perform()
-sleep(2)
+def login():
+    driver.find_element(By.XPATH, '//button[text()="Войти"]').click()
+    user_name = driver.find_element(By.XPATH, '//input[@name="email"]')
+    user_name.send_keys("forever21yong@gmail.com")
+    password = driver.find_element(By.XPATH, '//input[@name="password"]')
+    password.send_keys("ForeverYoung23")
+    actions = ActionChains(driver)
+    actions.send_keys(Keys.ENTER)
+    actions.perform()
+    sleep(2)
 # # if driver.find_element_by_css_selector('') добавить потом избавление от уведомлений
 
 
@@ -52,8 +53,6 @@ def get_items_on_page():
             items.append(ad.get_attribute('href'))
 
 
-get_items_on_page()
-print(len(items))
 
 
 
@@ -74,37 +73,30 @@ def get_ads_on_all_pages():
             get_items_on_page()
             print(len(items))
 
-get_ads_on_all_pages()
 
 # sex = items[0]
 # driver.get(sex)
 # sleep(3)
 # driver.find_element(By.XPATH, '//button[@data-name="call_button"]').click()
 #
-# def data_parse():
-#     # driver.get(sex)
-#     # sleep(3)
-#     # try:
-#     #     driver.WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//button[text()="Позвонить"]'))).click()
-#     # except:
-#     #     pass
-#     sleep(3)
-#     try:
-#         phone = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, '//div[@data-name="phone-number-modal"]/a'))).text
-#         name = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, '//div[@data-name="phone-number-modal"]/div'))).text
-#         base.append({
-#             "name": name,
-#             "phone": phone,
-#         })
-#     except:
-#         pass
-#
-# data_parse()
-#
-# for i in base:
-#     print(i)
-#
-#
+def data_parse():
+    sleep(3)
+    try:
+        driver.find_element(By.XPATH, '//button[@data-name="call_button"]').click()
+    except:
+        pass
+    sleep(3)
+    try:
+        phone = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, '//div[@data-name="phone-number-modal"]/a'))).text
+        name = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, '//div[@data-name="phone-number-modal"]/div'))).text
+        base.append({
+            "name": name,
+            "phone": phone,
+        })
+    except:
+        pass
+
+
 def writing_data_to_csv():
     with open("kufar.csv", "a") as temp:
         polya = ['name', 'phone']
@@ -112,3 +104,21 @@ def writing_data_to_csv():
         out.writeheader()
         for i in base:
             out.writerow(i)
+
+
+login()
+# ПОЛУЧТЕНИЕ КОЛИЧЕСТВА СТРАНИЦ ВЫДАЧИ
+pages_number = driver.find_element(By.XPATH, '//div[@data-name="listings-pagination"]').text
+pages_number = int(pages_number[-1])
+# ПОЛУЧЕНИЕ ССЫЛОК НА ОБЪЯВЛЕНИЯ НА ОДНОЙ СТРАНИЦЕ.ИСКЛЮЧАЕМ ПЛАТНЫЕ ОБЪЯВЛЕНИЯ НЕ ПО ТЕМЕ
+get_items_on_page()
+# ПРОХОД ВСЕХ СТРАНИЦ ВЫДАЧИ И ПОЛУЧЕНИЕ ССЫЛОК НА ОБЪЯВЛЕНИЯ
+get_ads_on_all_pages()
+
+for item in items:
+    driver.get(item)
+    sleep(4)
+    data_parse()
+    writing_data_to_csv()
+    sleep(4)
+
